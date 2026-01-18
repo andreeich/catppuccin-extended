@@ -122,7 +122,7 @@ local M = {
 		color_overrides = {},
 		highlight_overrides = {},
 	},
-	flavours = { latte = 1, frappe = 2, macchiato = 3, mocha = 4 },
+	flavours = { latte = 1, frappe = 2, macchiato = 3, mocha = 4, ["dracula-blade"] = 5 },
 	path_sep = jit and (jit.os == "Windows" and "\\" or "/") or package.config:sub(1, 1),
 }
 
@@ -148,7 +148,7 @@ local function get_flavour(default)
 	if flavour and not M.flavours[flavour] then
 		vim.notify(
 			string.format(
-				"Catppuccin (error): Invalid flavour '%s', flavour must be 'latte', 'frappe', 'macchiato', 'mocha' or 'auto'",
+				"Catppuccin (error): Invalid flavour '%s', flavour must be 'latte', 'frappe', 'macchiato', 'mocha', 'dracula-blade' or 'auto'",
 				flavour
 			),
 			vim.log.levels.ERROR
@@ -162,7 +162,7 @@ local did_setup = false
 
 function M.load(flavour)
 	if M.options.flavour == "auto" then -- set colorscheme based on o:background
-		M.options.flavour = nil -- ensure that this will only run once on startup
+		M.options.flavour = nil          -- ensure that this will only run once on startup
 	end
 	if not did_setup then M.setup() end
 	M.flavour = get_flavour(flavour)
@@ -192,15 +192,15 @@ function M.setup(user_conf)
 	if user_conf.default_integrations == false then M.default_options.integrations = {} end
 	if user_conf.default_integrations == false then
 		M.default_options.integrations = vim.iter(pairs(M.default_options.integrations))
-			:fold({}, function(integrations, name, opts)
-				if type(opts) == "table" then
-					opts.enabled = false
-				else
-					opts = false
-				end
-				integrations[name] = opts
-				return integrations
-			end)
+				:fold({}, function(integrations, name, opts)
+					if type(opts) == "table" then
+						opts.enabled = false
+					else
+						opts = false
+					end
+					integrations[name] = opts
+					return integrations
+				end)
 	end
 
 	M.options = vim.tbl_deep_extend("keep", user_conf, M.default_options)
@@ -219,9 +219,9 @@ function M.setup(user_conf)
 	local git_path = debug.getinfo(1).source:sub(2, -24) .. ".git"
 	local git = vim.fn.getftime(git_path) -- 2x faster vim.loop.fs_stat
 	local hash = require("catppuccin.lib.hashing").hash(user_conf)
-		.. (git == -1 and git_path or git) -- no .git in /nix/store -> cache path
-		.. (vim.o.winblend == 0 and 1 or 0) -- :h winblend
-		.. (vim.o.pumblend == 0 and 1 or 0) -- :h pumblend
+			.. (git == -1 and git_path or git) -- no .git in /nix/store -> cache path
+			.. (vim.o.winblend == 0 and 1 or 0) -- :h winblend
+			.. (vim.o.pumblend == 0 and 1 or 0) -- :h pumblend
 
 	-- Recompile if hash changed
 	if cached ~= hash then
